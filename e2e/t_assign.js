@@ -1,0 +1,30 @@
+const L = require('./lib');
+const dump = async (page, n = 50) => console.log((await L.text(page)).split('\n').filter(l => /button|textbox|checkbox|menuitem|text:|dialog/.test(l)).slice(0, n).join('\n').slice(0, 3000));
+(async () => {
+  let { browser, page } = await L.start(1400, 1000);
+  await L.signIn(page, 'employer@mtalchemy.demo', 'AlchemyEmployer!26');
+  await L.open(page, '/assign-course', 5000);
+  await L.click(page, 'Assign Course', 'button', { wait: 800 });
+  await L.expectText(page, 'Select', 'assignment validates selection');
+  await L.click(page, 'Course Emotional Intelligence Fundamentals', 'button', { wait: 800 });
+  await page.getByRole('menuitem', { name: 'Mindfulness at Work' }).first().click(); await page.waitForTimeout(600);
+  await L.click(page, 'Aisha Rahman', 'checkbox', { wait: 400 });
+  await L.click(page, 'Choose a deadline', 'button', { wait: 1200 });
+  await dump(page, 12);
+  await page.getByRole('button', { name: 'OK' }).first().click(); await page.waitForTimeout(800);
+  await L.click(page, 'Assign Course', 'button', { wait: 2500 });
+  const a = (await L.fsList('assignments')).find(x => x.employee === 'learner@mtalchemy.demo' && x.course === 'Mindfulness at Work');
+  L.check(!!a, 'assignment saved in Firestore', JSON.stringify(a));
+  await L.open(page, '/reports', 5000);
+  await L.expectText(page, 'Mindfulness at Work', 'report lists new assignment');
+  await L.shot(page, 'reports');
+  await browser.close();
+
+  ({ browser, page } = await L.start(1400, 1000));
+  await L.signIn(page, 'learner@mtalchemy.demo', 'AlchemyLearner!26');
+  await L.expectText(page, 'Mindfulness at Work', 'assigned course appears for learner');
+  const t = await L.text(page);
+  L.check(/2 Enrolled/.test(t), 'learner now has 2 enrolled courses', (t.match(/\d+ Enrolled/) || [])[0]);
+  await browser.close();
+  console.log('FAILURES', L.failures());
+})();

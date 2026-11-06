@@ -1,0 +1,118 @@
+const L = require('./lib');
+const fs = require('fs');
+(async () => {
+  const stamp = Date.now();
+  const org = `hr.${stamp}@novacorp.com`;
+  const emp1 = `lina.${stamp}@novacorp.com`, emp2 = `raj.${stamp}@novacorp.com`;
+  fs.mkdirSync('fixtures', { recursive: true });
+  fs.writeFileSync('fixtures/invites.csv', `Name,Email,Department\nLina Ong,${emp1},Sales\nRaj Kumar,${emp2},Finance\nBad Row,not-an-email,IT\n`);
+  fs.writeFileSync('fixtures/assign.csv', `Email,Course,Due date (YYYY-MM-DD)\n${emp1},Mindfulness at Work,2026-12-31\n${emp2},Mindfulness at Work,2026-12-31\nghost@novacorp.com,Mindfulness at Work,2026-12-31\n`);
+  let { browser, page } = await L.start(1400, 1000);
+  console.log('Journey D: register organization', org);
+  await L.open(page, '/register');
+  await L.click(page, 'Organization', 'button', { exact: true, wait: 600 });
+  await L.fill(page, 'Organization name', 'NovaCorp Sdn Bhd');
+  await L.fill(page, 'Contact person', 'Hana Lim');
+  await L.fill(page, 'Work email', org);
+  await L.fill(page, 'Phone', '+60 3 2222 3333');
+  await L.fill(page, 'Company registration no.', '202301099887');
+  await L.fill(page, 'Number of employees', '85');
+  await L.fill(page, 'Industry', 'Logistics');
+  await L.fill(page, 'Password', 'NovaCorp2026!');
+  await L.fill(page, 'Confirm password', 'NovaCorp2026!');
+  await L.click(page, 'I agree', 'checkbox', { wait: 300 });
+  await L.click(page, 'Create organization account', 'button', { wait: 5000 });
+  await L.expectText(page, 'EMPLOYER PORTAL', 'organization dashboard');
+  const u = (await L.fsList('users')).find(x => x.email === org);
+  L.check(u && u.registrationNumber === '202301099887' && u.employeeCount === '85', 'registration no. and employee count saved');
+
+  console.log('Bulk invite employees from CSV');
+  await L.open(page, '/employees', 4000);
+  const [chooser] = await Promise.all([page.waitForEvent('filechooser'), L.click(page, 'Bulk invite', 'button', { wait: 100 })]);
+  await chooser.setFiles('fixtures/invites.csv'); await page.waitForTimeout(2000);
+  await L.expectText(page, '2 of 3 row(s) ready', 'preview flags the bad row');
+  await L.shot(page, 'bulk_preview');
+  await L.click(page, 'Invite 2', 'button', { wait: 2500 });
+  const emps = (await L.fsList('employees')).filter(e => e.organization === org);
+  L.check(emps.length === 2, `2 employees saved (${emps.length})`);
+
+  console.log('Seats required, then buy seats and bulk assign');
+  await L.open(page, '/assign-course', 4000);
+  const [ch0] = await Promise.all([page.waitForEvent('filechooser'), L.click(page, 'Bulk assign', 'button', { wait: 100 })]);
+  await ch0.setFiles('fixtures/assign.csv'); await page.waitForTimeout(2000);
+  await L.expectText(page, 'No seats left', 'assignment blocked without seats');
+  await L.click(page, 'Cancel', 'button', { exact: true, wait: 500 });
+  await L.open(page, '/purchase-courses', 4000);
+  // Catalogue order: EI Fundamentals, Mindfulness at Work, ...
+  await page.getByRole('button', { name: /^Buy 5 seats/ }).nth(1).click(); await page.waitForTimeout(1500);
+  await L.click(page, 'FPX', 'button', { exact: true, wait: 600 });
+  await page.getByRole('button', { name: /Your bank/ }).first().click(); await page.waitForTimeout(600);
+  await page.getByRole('menuitem', { name: 'Maybank2u' }).first().click(); await page.waitForTimeout(500);
+  await L.click(page, 'Pay RM', 'button', { wait: 4000 });
+  await L.expectText(page, 'seats of Mindfulness at Work are ready', 'seats purchased via FPX');
+  await L.open(page, '/assign-course', 4000);
+  const [ch] = await Promise.all([page.waitForEvent('filechooser'), L.click(page, 'Bulk assign', 'button', { wait: 100 })]);
+  await ch.setFiles('fixtures/assign.csv'); await page.waitForTimeout(2000);
+  await L.expectText(page, '2 of 3 row(s) ready', 'assign preview flags non-employee');
+  await L.click(page, 'Assign 2', 'button', { wait: 2500 });
+  const asg = (await L.fsList('assignments')).filter(a => a.organization === org);
+  L.check(asg.length === 2, `2 assignments saved (${asg.length})`);
+  await browser.close();
+
+  console.log('Employee registers and receives the assignment');
+  ({ browser, page } = await L.start(1280, 900));
+  await L.open(page, '/register');
+  await L.fill(page, 'Full name', 'Lina Ong');
+  await L.fill(page, 'Email', emp1);
+  await L.fill(page, 'Phone', '0198887766');
+  await L.click(page, 'Select a date', 'button', { wait: 1200 });
+  await L.click(page, 'OK', 'button', { exact: true, wait: 800 });
+  await L.click(page, 'Leadership', 'checkbox', { exact: true, wait: 300 });
+  await L.fill(page, 'Password', 'LinaOng2026!');
+  await L.fill(page, 'Confirm password', 'LinaOng2026!');
+  await L.click(page, 'I agree', 'checkbox', { wait: 300 });
+  await L.click(page, 'Create learner account', 'button', { wait: 6000 });
+  await L.expectText(page, 'Mindfulness at Work', 'assigned course on employee dashboard');
+  await L.click(page, 'Notifications', 'button', { wait: 1200 });
+  await L.expectText(page, 'New course assigned', 'employee notified');
+  await page.keyboard.press('Escape'); await page.waitForTimeout(500);
+  await L.click(page, 'Start Course', 'button', { wait: 3000 });
+  for (let k = 0; k < 4; k++) {
+    await page.getByRole('button', { name: 'Mark Complete', exact: true }).click(); await page.waitForTimeout(250);
+    const nx = page.getByRole('button', { name: 'Next', exact: true });
+    if (await nx.count()) { await nx.click(); await page.waitForTimeout(250); }
+  }
+  await page.waitForTimeout(2500);
+  await browser.close();
+
+  ({ browser, page } = await L.start(1400, 1000));
+  await L.signIn(page, org, 'NovaCorp2026!');
+  await L.open(page, '/reports', 5000);
+  await L.expectText(page, 'Lina Ong', 'employer report lists employee');
+  const a1 = (await L.fsList('assignments')).find(a => a.employee === emp1);
+  L.check(a1 && a1.progress > 0, `employee progress flows to employer (${a1 && a1.progress}%)`);
+  await L.shot(page, 'employer_report');
+  await browser.close();
+
+  console.log('Journey E: corporate enquiry');
+  ({ browser, page } = await L.start(1280, 900));
+  await L.open(page, '/organizations', 4000);
+  await L.click(page, 'Talk to MT Alchemy', 'button', { wait: 3000 });
+  await L.fill(page, 'Name', 'Hana Lim');
+  await L.fill(page, 'Email', org);
+  await L.fill(page, 'Phone', '0322223333');
+  await L.fill(page, 'Organization (optional)', 'NovaCorp Sdn Bhd');
+  await L.click(page, 'Enquiry type', 'button', { wait: 700 });
+  await page.getByRole('menuitem', { name: 'Corporate Training' }).first().click(); await page.waitForTimeout(400);
+  await L.fill(page, 'Message', 'We need a customised resilience programme for 85 warehouse staff.');
+  await L.click(page, 'Submit enquiry', 'button', { wait: 3000 });
+  const enq = (await L.fsList('enquiries')).find(e => e.email === org);
+  L.check(enq && enq.enquiryType === 'Corporate Training', 'enquiry stored');
+  await browser.close();
+  ({ browser, page } = await L.start(1400, 1000));
+  await L.signIn(page, 'admin@mtalchemy.demo', 'AlchemyAdmin!26');
+  await L.open(page, '/admin/enquiries', 5000);
+  await L.expectText(page, 'customised resilience programme', 'MT Alchemy receives enquiry');
+  await browser.close();
+  console.log('FAILURES', L.failures());
+})();

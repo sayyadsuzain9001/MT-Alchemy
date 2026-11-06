@@ -1,0 +1,335 @@
+{
+  "products": {
+    "clarity-workbook": {
+      "id": "clarity-workbook",
+      "name": "Emotional Clarity Workbook",
+      "description": "A guided digital workbook with reflection prompts for emotional awareness and deliberate responses.",
+      "price": 29.0,
+      "category": "Digital",
+      "icon": 61890,
+      "imagePath": null,
+      "imageBytes": null,
+      "downloadAssetPath": "assets/downloads/emotional_clarity_workbook.txt",
+      "digital": true,
+      "stock": 20,
+      "published": true,
+      "position": 0
+    },
+    "mindful-journal": {
+      "id": "mindful-journal",
+      "name": "Mindful Reflection Journal",
+      "description": "A printed journal designed to help individuals build a steady reflection practice.",
+      "price": 48.0,
+      "category": "Physical",
+      "icon": 61103,
+      "imagePath": "assets/images/impact_teachers_retreat.jpeg",
+      "imageBytes": null,
+      "downloadAssetPath": null,
+      "digital": false,
+      "stock": 35,
+      "published": true,
+      "position": 1
+    },
+    "conversation-cards": {
+      "id": "conversation-cards",
+      "name": "Conversation Prompt Cards",
+      "description": "A physical set of prompts for connection and constructive team dialogue.",
+      "price": 65.0,
+      "category": "Physical",
+      "icon": 62454,
+      "imagePath": "assets/images/workshop_group_discussion.jpeg",
+      "imageBytes": null,
+      "downloadAssetPath": null,
+      "digital": false,
+      "stock": 18,
+      "published": true,
+      "position": 2
+    },
+    "team-learning-kit": {
+      "id": "team-learning-kit",
+      "name": "Team Learning Kit",
+      "description": "A practical activity kit for facilitated team learning and shared reflection.",
+      "price": 120.0,
+      "category": "Physical",
+      "icon": 985256,
+      "imagePath": "assets/images/workshop_team_creativity.jpeg",
+      "imageBytes": null,
+      "downloadAssetPath": null,
+      "digital": false,
+      "stock": 12,
+      "published": true,
+      "position": 3
+    },
+    "facilitator-guide": {
+      "id": "facilitator-guide",
+      "name": "Facilitator Reflection Guide",
+      "description": "A downloadable guide with session planning notes and debrief questions.",
+      "price": 39.0,
+      "category": "Digital",
+      "icon": 61358,
+      "imagePath": null,
+      "imageBytes": null,
+      "downloadAssetPath": "assets/downloads/facilitator_reflection_guide.txt",
+      "digital": true,
+      "stock": 20,
+      "published": true,
+      "position": 4
+    }
+  },
+  "courses": {
+    "ei-fundamentals": {
+      "id": "ei-fundamentals",
+      "title": "Emotional Intelligence Fundamentals",
+      "description": "Build self-awareness, emotional regulation, empathy, and stronger interpersonal skills.",
+      "instructor": "MT Alchemy Learning Team",
+      "duration": "6 weeks",
+      "level": "Beginner",
+      "rating": 4.8,
+      "price": 499.0,
+      "modules": [
+        "Introduction to Emotional Intelligence",
+        "Self-Awareness",
+        "Emotional Regulation",
+        "Empathy and Social Awareness",
+        "Building Better Relationships"
+      ],
+      "prerequisites": [],
+      "pdfName": null,
+      "quiz": [],
+      "status": "Published",
+      "passMark": 60,
+      "videoUrl": null,
+      "position": 0,
+      "pdfChunks": 0
+    },
+    "mindfulness": {
+      "id": "mindfulness",
+      "title": "Mindfulness at Work",
+      "description": "Learn practical mindfulness techniques for focus, resilience, and workplace well-being.",
+      "instructor": "MT Alchemy Learning Team",
+      "duration": "4 weeks",
+      "level": "Beginner",
+      "rating": 4.7,
+      "price": 399.0,
+      "modules": [
+        "Introduction to Mindfulness",
+        "Breathing and Attention",
+        "Managing Workplace Stress",
+        "Mindful Communication",
+        "Building a Daily Practice"
+      ],
+      "prerequisites": [],
+      "pdfName": null,
+      "quiz": [],
+      "status": "Published",
+      "passMark": 60,
+      "videoUrl": null,
+      "position": 1,
+      "pdfChunks": 0
+    },
+    "leadership": {
+      "id": "leadership",
+      "title": "Leadership Essentials",
+      "description": "Develop practical leadership skills for communication, decision-making, and team growth.",
+      "instructor": "MT Alchemy Learning Team",
+      "duration": "8 weeks",
+      "level": "Intermediate",
+      "rating": 4.9,
+      "price": 699.0,
+      "modules": [
+        "Foundations of Leadership",
+        "Leading Yourself",
+        "Leading Teams",
+        "Decision-Making",
+        "Creating High-Performing Teams"
+      ],
+      "prerequisites": [
+        "ei-fundamentals"
+      ],
+      "pdfName": null,
+      "quiz": [],
+      "status": "Published",
+      "passMark": 60,
+      "videoUrl": null,
+      "position": 2,
+      "pdfChunks": 0
+    },
+    "communication": {
+      "id": "communication",
+      "title": "Effective Communication",
+      "description": "Strengthen communication skills for clearer conversations, presentations, and professional relationships.",
+      "instructor": "MT Alchemy Learning Team",
+      "duration": "5 weeks",
+      "level": "Beginner",
+      "rating": 4.8,
+      "price": 449.0,
+      "modules": [
+        "Foundations of Communication",
+        "Active Listening",
+        "Clear and Confident Speaking",
+        "Difficult Conversations",
+        "Professional Communication"
+      ],
+      "prerequisites": [],
+      "pdfName": null,
+      "quiz": [],
+      "status": "Published",
+      "passMark": 60,
+      "videoUrl": null,
+      "position": 3,
+      "pdfChunks": 0
+    },
+    "team-effectiveness": {
+      "id": "team-effectiveness",
+      "title": "Team Effectiveness",
+      "description": "Learn how to build collaborative, productive, and high-performing teams.",
+      "instructor": "MT Alchemy Learning Team",
+      "duration": "6 weeks",
+      "level": "Intermediate",
+      "rating": 4.7,
+      "price": 549.0,
+      "modules": [
+        "Understanding Team Dynamics",
+        "Building Trust",
+        "Collaboration and Cooperation",
+        "Managing Team Conflict",
+        "High-Performance Teams"
+      ],
+      "prerequisites": [],
+      "pdfName": null,
+      "quiz": [],
+      "status": "Published",
+      "passMark": 60,
+      "videoUrl": null,
+      "position": 4,
+      "pdfChunks": 0
+    },
+    "workplace-wellbeing": {
+      "id": "workplace-wellbeing",
+      "title": "Workplace Well-being",
+      "description": "Explore practical approaches to creating healthier, happier, and more resilient workplaces.",
+      "instructor": "MT Alchemy Learning Team",
+      "duration": "5 weeks",
+      "level": "Beginner",
+      "rating": 4.6,
+      "price": 399.0,
+      "modules": [
+        "Understanding Workplace Well-being",
+        "Managing Stress",
+        "Healthy Work Practices",
+        "Resilience at Work",
+        "Creating a Well-being Culture"
+      ],
+      "prerequisites": [],
+      "pdfName": null,
+      "quiz": [],
+      "status": "Published",
+      "passMark": 60,
+      "videoUrl": null,
+      "position": 5,
+      "pdfChunks": 0
+    },
+    "personal-development": {
+      "id": "personal-development",
+      "title": "Personal Development",
+      "description": "Develop self-awareness, confidence, goal-setting, and habits for continuous personal growth.",
+      "instructor": "MT Alchemy Learning Team",
+      "duration": "6 weeks",
+      "level": "Beginner",
+      "rating": 4.8,
+      "price": 429.0,
+      "modules": [
+        "Self-Awareness",
+        "Personal Goals",
+        "Building Positive Habits",
+        "Confidence and Growth",
+        "Continuous Improvement"
+      ],
+      "prerequisites": [],
+      "pdfName": null,
+      "quiz": [],
+      "status": "Published",
+      "passMark": 60,
+      "videoUrl": null,
+      "position": 6,
+      "pdfChunks": 0
+    },
+    "organisational-development": {
+      "id": "organisational-development",
+      "title": "Organisational Development",
+      "description": "Understand people, culture, and change strategies that help organisations grow effectively.",
+      "instructor": "MT Alchemy Learning Team",
+      "duration": "8 weeks",
+      "level": "Advanced",
+      "rating": 4.9,
+      "price": 749.0,
+      "modules": [
+        "Introduction to Organisational Development",
+        "Organisational Culture",
+        "Change Management",
+        "People and Performance",
+        "Building Sustainable Organisations"
+      ],
+      "prerequisites": [
+        "leadership"
+      ],
+      "pdfName": null,
+      "quiz": [],
+      "status": "Published",
+      "passMark": 60,
+      "videoUrl": null,
+      "position": 7,
+      "pdfChunks": 0
+    }
+  },
+  "employees": {
+    "employer@mtalchemy.demo__alicia@example.com": {
+      "name": "Alicia Wong",
+      "department": "Human Resources",
+      "email": "alicia@example.com",
+      "status": "Active",
+      "organization": "employer@mtalchemy.demo",
+      "addedAt": "2026-09-01T09:00:00.000"
+    },
+    "employer@mtalchemy.demo__daniel@example.com": {
+      "name": "Daniel Lee",
+      "department": "Finance",
+      "email": "daniel@example.com",
+      "status": "Active",
+      "organization": "employer@mtalchemy.demo",
+      "addedAt": "2026-09-02T09:00:00.000"
+    },
+    "employer@mtalchemy.demo__farah@example.com": {
+      "name": "Farah Nordin",
+      "department": "Management",
+      "email": "farah@example.com",
+      "status": "Active",
+      "organization": "employer@mtalchemy.demo",
+      "addedAt": "2026-09-03T09:00:00.000"
+    }
+  },
+  "assignments": {
+    "employer@mtalchemy.demo__alicia@example.com__Emotional_Intelligence_Fundamentals": {
+      "course": "Emotional Intelligence Fundamentals",
+      "team": "Human Resources",
+      "employee": "alicia@example.com",
+      "due": "30 Oct 2026",
+      "progress": 68,
+      "score": 82,
+      "hours": 12,
+      "organization": "employer@mtalchemy.demo",
+      "assignedAt": "2026-09-11T09:00:00.000"
+    },
+    "employer@mtalchemy.demo__farah@example.com__Leadership_Essentials": {
+      "course": "Leadership Essentials",
+      "team": "Management",
+      "employee": "farah@example.com",
+      "due": "14 Nov 2026",
+      "progress": 42,
+      "score": 76,
+      "hours": 8,
+      "organization": "employer@mtalchemy.demo",
+      "assignedAt": "2026-09-12T09:00:00.000"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+const L = require('./lib');
+const dump = async (page, n = 50) => console.log((await L.text(page)).split('\n').filter(l => /button|textbox|combobox|checkbox|menuitem|text:|dialog/.test(l)).slice(0, n).join('\n').slice(0, 3500));
+(async () => {
+  const { browser, page } = await L.start(1400, 1000);
+  await L.signIn(page, 'employer@mtalchemy.demo', 'AlchemyEmployer!26');
+  await L.open(page, '/employees', 5000);
+  await L.click(page, 'Invite employee', 'button', { wait: 1200 });
+  await L.click(page, 'Create invitation', 'button', { wait: 800 });
+  await L.expectText(page, 'Enter', 'invite validates empty form');
+  await L.fill(page, 'Full name', 'Aisha Rahman');
+  await L.fill(page, 'Work email', 'learner@mtalchemy.demo');
+  await L.click(page, 'Create invitation', 'button', { wait: 2500 });
+  await L.expectText(page, 'learner@mtalchemy.demo', 'employee added to list');
+  const emps = await L.fsList('employees');
+  L.check(emps.some(e => e.email === 'learner@mtalchemy.demo' && e.organization === 'employer@mtalchemy.demo'), 'employee saved in Firestore');
+  await L.open(page, '/assign-course', 5000);
+  await dump(page, 40);
+  await L.shot(page, 'assign');
+  await browser.close();
+  console.log('FAILURES', L.failures());
+})();

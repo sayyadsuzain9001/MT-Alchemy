@@ -1,0 +1,14 @@
+{
+  "name": "mtalchemy-firebase-seed",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Creates MT Alchemy demo accounts and starter data in Firebase (emulator or real project).",
+  "main": "seed.js",
+  "scripts": {
+    "seed": "node seed.js",
+    "seed:emulator": "node seed.js --emulator"
+  },
+  "dependencies": {
+    "firebase-admin": "13.5.0"
+  }
+}

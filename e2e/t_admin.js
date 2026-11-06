@@ -1,0 +1,23 @@
+const L = require('./lib');
+const dump = async (page, n = 50) => console.log((await L.text(page)).split('\n').filter(l => /button|menuitem|option/.test(l)).slice(0, n).join('\n').slice(0, 3000));
+(async () => {
+  const { browser, page } = await L.start(1400, 1000);
+  await L.signIn(page, 'admin@mtalchemy.demo', 'AlchemyAdmin!26');
+  await L.open(page, '/admin/orders', 5000);
+  const latest = (await L.fsList('orders')).sort((a, b) => b.date.localeCompare(a.date))[0];
+  console.log('latest order', latest.number);
+  await page.getByRole('button', { name: 'Payment status Pending' }).first().click(); await page.waitForTimeout(800);
+  await dump(page, 40);
+  await page.getByRole('menuitem', { name: 'Paid' }).or(page.getByRole('option', { name: 'Paid' })).or(page.getByRole('button', { name: 'Paid', exact: true })).first().click();
+  await page.waitForTimeout(2500);
+  let o = (await L.fsList('orders')).find(x => x.number === latest.number);
+  L.check(o.paymentStatus === 'Paid' && o.fulfilmentStatus === 'Processing', 'admin marks order Paid → Processing in Firestore', o.paymentStatus + '/' + o.fulfilmentStatus);
+  await page.getByRole('button', { name: 'Fulfilment status Processing' }).first().click(); await page.waitForTimeout(800);
+  await page.getByRole('menuitem', { name: 'Shipped' }).or(page.getByRole('option', { name: 'Shipped' })).or(page.getByRole('button', { name: 'Shipped', exact: true })).first().click();
+  await page.waitForTimeout(2500);
+  o = (await L.fsList('orders')).find(x => x.number === latest.number);
+  L.check(o.fulfilmentStatus === 'Shipped' && /^MT-/.test(o.trackingNumber || ''), 'order shipped with tracking number', o.fulfilmentStatus + ' ' + o.trackingNumber);
+  await L.shot(page, 'admin_orders');
+  await browser.close();
+  console.log('FAILURES', L.failures());
+})();

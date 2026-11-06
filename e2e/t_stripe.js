@@ -1,0 +1,56 @@
+// Stripe Checkout (test mode) end to end against the live build (BASE=http://localhost:8090/).
+const L = require('./lib');
+(async () => {
+  const { browser, page } = await L.start(1280, 900);
+  await L.signIn(page, 'learner@mtalchemy.demo', 'AlchemyLearner!26');
+  console.log('Buy a digital product with Stripe');
+  await L.open(page, '/store', 5000);
+  await L.click(page, 'Add Emotional Clarity Workbook to cart', 'button', { wait: 800 });
+  await L.click(page, 'View cart', 'button', { wait: 2000 });
+  await L.click(page, 'Proceed to Checkout', 'button', { wait: 3000 });
+  for (const [f, v] of [['Full name', 'Aisha Rahman'], ['Phone', '0123456789'], ['Street address', '12 Jalan Bukit Bintang'], ['City', 'Kuala Lumpur'], ['State', 'WP'], ['Postcode', '55100'], ['Country', 'Malaysia']]) await L.fill(page, f, v);
+  await L.click(page, 'Continue to payment', 'button', { wait: 1500 });
+  await L.expectText(page, 'Stripe test mode', 'dialog explains Stripe test mode');
+  await L.click(page, 'Continue to Stripe', 'button', { wait: 100 });
+  await page.waitForURL(/checkout\.stripe\.com/, { timeout: 30000 });
+  L.check(true, 'redirected to Stripe Checkout');
+  await page.waitForTimeout(4000);
+  await L.shot(page, 'stripe_checkout');
+  // Stripe-hosted test page: published test card.
+  await page.locator('#cardNumber').fill('4242 4242 4242 4242');
+  await page.locator('#cardExpiry').fill('12 / 30');
+  await page.locator('#cardCvc').fill('123');
+  const name = page.locator('#billingName');
+  if (await name.count()) await name.fill('Aisha Rahman');
+  const country = page.locator('#billingCountry');
+  if (await country.count()) await country.selectOption('MY').catch(() => {});
+  const postal = page.locator('#billingPostalCode');
+  if (await postal.count() && await postal.isVisible()) await postal.fill('55100');
+  await page.locator('button[type=submit]').first().click();
+  await page.waitForURL(/localhost:8090/, { timeout: 60000 });
+  await page.waitForTimeout(7000);
+  await L.expectText(page, 'Payment successful', 'back in app, payment confirmed via server');
+  await L.shot(page, 'stripe_return');
+  await L.click(page, 'View order', 'button', { wait: 3000 });
+  await L.expectText(page, 'Status: Paid', 'order marked Paid');
+  await L.expectText(page, 'Stripe', 'payment method shows Stripe');
+
+  console.log('Cancelled Stripe payment keeps order pending');
+  await L.open(page, '/store', 5000);
+  await L.click(page, 'Add Emotional Clarity Workbook to cart', 'button', { wait: 800 });
+  await L.click(page, 'View cart', 'button', { wait: 2000 });
+  await L.click(page, 'Proceed to Checkout', 'button', { wait: 3000 });
+  for (const [f, v] of [['Full name', 'Aisha Rahman'], ['Phone', '0123456789'], ['Street address', '12 Jalan'], ['City', 'KL'], ['State', 'WP'], ['Postcode', '55100'], ['Country', 'Malaysia']]) await L.fill(page, f, v);
+  await L.click(page, 'Continue to payment', 'button', { wait: 1500 });
+  await L.click(page, 'Continue to Stripe', 'button', { wait: 100 });
+  await page.waitForURL(/checkout\.stripe\.com/, { timeout: 30000 });
+  await page.waitForTimeout(3000);
+  const back = page.locator('a[href*="status=cancelled"], [data-testid="business-link"]').first();
+  if (await back.count()) await back.click(); else await page.goBack();
+  await page.waitForURL(/localhost:8090/, { timeout: 30000 });
+  await page.waitForTimeout(6000);
+  await L.expectText(page, 'Payment cancelled', 'cancel returns to app');
+  await L.expectText(page, 'Try payment again', 'retry offered');
+  await browser.close();
+  console.log('FAILURES', L.failures());
+})();

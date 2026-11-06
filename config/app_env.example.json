@@ -1,0 +1,12 @@
+{
+  "FIREBASE_API_KEY": "",
+  "FIREBASE_PROJECT_ID": "your-project-id",
+  "FIREBASE_APP_ID": "1:000000000000:web:xxxxxxxxxxxxxxxxxxxxxx",
+  "FIREBASE_MESSAGING_SENDER_ID": "000000000000",
+  "FIREBASE_AUTH_DOMAIN": "your-project-id.firebaseapp.com",
+  "FIREBASE_STORAGE_BUCKET": "your-project-id.firebasestorage.app",
+  "GEMINI_API_KEY": "",
+  "GEMINI_MODEL": "gemini-3.5-flash",
+  "SHOW_DEMO_ACCOUNTS": true,
+  "PAYMENTS_API_URL": "http://localhost:4242"
+}

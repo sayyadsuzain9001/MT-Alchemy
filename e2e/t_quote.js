@@ -1,0 +1,27 @@
+const L = require('./lib');
+const dump = async (page, n = 30) => console.log((await L.text(page)).split('\n').filter(l => /button|textbox|menuitem|dialog/.test(l)).slice(0, n).join('\n').slice(0, 2000));
+(async () => {
+  let { browser, page } = await L.start(1400, 1000);
+  await L.signIn(page, 'admin@mtalchemy.demo', 'AlchemyAdmin!26');
+  await L.open(page, '/admin/quotes', 5000);
+  await L.click(page, 'Update status / prepare quote', 'button', { wait: 1200 });
+  await dump(page);
+  const statusBtn = page.getByRole('button', { name: /Request status/ }).first();
+  await statusBtn.click(); await page.waitForTimeout(600);
+  await page.getByRole('menuitem', { name: 'Quoted' }).first().click(); await page.waitForTimeout(500);
+  await dump(page);
+  await L.fill(page, 'Indicative total (RM)', '18500');
+  await L.fill(page, 'Response / internal note', 'Includes two facilitators, workbooks and a follow-up session.');
+  await L.click(page, 'Save response', 'button', { wait: 2500 });
+  const q = (await L.fsList('quotes')).find(x => x.ownerEmail === 'employer@mtalchemy.demo');
+  L.check(q.status === 'Quoted' && q.quotedTotal === 18500, 'admin quote response saved', JSON.stringify([q.status, q.quotedTotal]));
+  await browser.close();
+  ({ browser, page } = await L.start(1400, 1000));
+  await L.signIn(page, 'employer@mtalchemy.demo', 'AlchemyEmployer!26');
+  await L.open(page, '/quote-requests', 5000);
+  await L.expectText(page, 'Quoted', 'employer sees quoted status');
+  await L.expectText(page, '18500', 'employer sees quoted amount');
+  await L.shot(page, 'employer_quotes');
+  await browser.close();
+  console.log('FAILURES', L.failures());
+})();

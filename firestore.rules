@@ -1,0 +1,138 @@
+rules_version = '2';
+
+// MT Alchemy security rules.
+// Roles live in users/{uid}.role. Only Learner and Employer can be chosen at
+// registration; Trainer and Admin are granted by the seed script / console.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function myEmail() { return signedIn() ? request.auth.token.email.lower() : ''; }
+    function profile() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    function hasProfile() {
+      return signedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+    function role() { return hasProfile() ? profile().role : ''; }
+    function isAdmin() { return role() == 'Admin'; }
+    function isTrainer() { return role() == 'Trainer'; }
+    function isEmployer() { return role() == 'Employer'; }
+    function changedOnly(fields) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(fields);
+    }
+
+    match /users/{uid} {
+      allow read: if signedIn() && (request.auth.uid == uid || isAdmin() || isTrainer());
+      allow create: if isAdmin() || (signedIn() && request.auth.uid == uid
+        && request.resource.data.role in ['Learner', 'Employer']
+        && request.resource.data.email == myEmail());
+      allow update: if signedIn() && (
+        isAdmin() ||
+        (request.auth.uid == uid && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'email']))
+      );
+      allow delete: if isAdmin();
+    }
+
+    // Public catalogue. Buyers may only change stock (reserve on checkout).
+    match /products/{id} {
+      allow read: if true;
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || (signedIn() && changedOnly(['stock'])
+        && request.resource.data.stock >= 0);
+    }
+
+    match /courses/{id} {
+      allow read: if true;
+      allow write: if isAdmin() || isTrainer();
+    }
+    match /courseFiles/{id}/chunks/{chunk} {
+      allow read: if true;
+      allow write: if isAdmin() || isTrainer();
+    }
+
+    match /orders/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.customerEmail == myEmail());
+      // The test-mode gateway reports Paid/Failed/Pending from the client.
+      // With a real provider, only a server webhook may set Paid.
+      allow create: if signedIn() && request.resource.data.customerEmail == myEmail()
+        && request.resource.data.paymentStatus in ['Pending', 'Paid', 'Failed'];
+      // A customer may confirm their own pending order after the payment
+      // server verified the Stripe Checkout session.
+      allow update: if isAdmin() || (signedIn()
+        && resource.data.customerEmail == myEmail()
+        && resource.data.paymentStatus in ['Pending', 'Failed']
+        && request.resource.data.paymentStatus == 'Paid'
+        && changedOnly(['paymentStatus', 'fulfilmentStatus', 'paymentMethod']));
+      allow delete: if isAdmin();
+    }
+
+    match /quotes/{id} {
+      allow read: if isAdmin() || (signedIn() && resource.data.ownerEmail == myEmail());
+      allow create: if (isEmployer() || isAdmin()) && request.resource.data.ownerEmail == myEmail()
+        && request.resource.data.status == 'New';
+      allow update, delete: if isAdmin();
+    }
+
+    // Website contact form: anyone may submit; only admins read and manage.
+    match /enquiries/{id} {
+      allow create: if request.resource.data.status == 'New'
+        && request.resource.data.message is string
+        && request.resource.data.message.size() < 5000;
+      allow read, update, delete: if isAdmin();
+    }
+
+    match /employees/{id} {
+      allow read: if isAdmin() || (isEmployer() && resource.data.organization == myEmail());
+      allow create, update: if isAdmin() || (isEmployer() && request.resource.data.organization == myEmail());
+      allow delete: if isAdmin() || (isEmployer() && resource.data.organization == myEmail());
+    }
+
+    match /assignments/{id} {
+      allow read: if isAdmin() || isTrainer()
+        || (isEmployer() && resource.data.organization == myEmail())
+        || (signedIn() && resource.data.employee == myEmail());
+      allow create: if isAdmin() || (isEmployer() && request.resource.data.organization == myEmail());
+      allow update: if isAdmin()
+        || (isEmployer() && resource.data.organization == myEmail() && request.resource.data.organization == myEmail())
+        || (signedIn() && resource.data.employee == myEmail() && changedOnly(['progress', 'score', 'hours']));
+      allow delete: if isAdmin() || (isEmployer() && resource.data.organization == myEmail());
+    }
+
+    // Learner progress keyed by email.
+    match /progress/{email} {
+      allow read: if signedIn() && (email == myEmail() || isAdmin() || isTrainer());
+      allow write: if signedIn() && email == myEmail();
+    }
+
+    // Quiz submissions; trainers add feedback.
+    match /quizAttempts/{id} {
+      allow read: if isAdmin() || isTrainer() || (signedIn() && resource.data.learner == myEmail());
+      allow create: if signedIn() && request.resource.data.learner == myEmail();
+      allow update: if (isTrainer() || isAdmin())
+        && changedOnly(['feedback', 'reviewedBy', 'reviewedAt', 'status']);
+    }
+
+    // In-app notifications: staff and employers send, recipients read and
+    // mark them read.
+    match /notifications/{id} {
+      allow create: if (isAdmin() || isTrainer() || isEmployer())
+        && request.resource.data.sender == myEmail();
+      allow read: if signedIn() && resource.data.recipient == myEmail();
+      allow update: if signedIn() && resource.data.recipient == myEmail()
+        && changedOnly(['read']);
+    }
+
+    // Issued certificates: public verification by ID, issued by the learner.
+    match /certificates/{id} {
+      allow read: if true;
+      allow create, update: if signedIn() && request.resource.data.learnerEmail == myEmail();
+      allow delete: if isAdmin();
+    }
+
+    // Chat assistant transcripts (owner only).
+    match /chats/{uid}/messages/{id} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+  }
+}

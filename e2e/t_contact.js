@@ -1,0 +1,43 @@
+const L = require('./lib');
+(async () => {
+  let { browser, page } = await L.start(1400, 1000);
+  console.log('Guest contact enquiry (skipped rerun)');
+  await L.open(page, '/contact', 5000);
+  await L.click(page, 'Submit enquiry', 'button', { wait: 800 });
+  await L.fill(page, 'Name', 'Daniel Tan');
+  await L.fill(page, 'Email', 'daniel.tan@example.com');
+  await L.fill(page, 'Phone', '0192233445');
+  await L.fill(page, 'Organization (optional)', 'Tan Logistics');
+  await L.click(page, 'Enquiry type', 'button', { wait: 800 });
+  await page.getByRole('menuitem').first().click(); await page.waitForTimeout(500);
+  await L.fill(page, 'Message', 'We would like a leadership workshop for 25 managers in January.');
+  await L.click(page, 'Submit enquiry', 'button', { wait: 3000 });
+  const enq = (await L.fsList('enquiries')).find(e => e.email === 'daniel.tan@example.com');
+  L.check(enq && enq.status === 'New', 'guest enquiry stored in Firestore (rules allow public create)', JSON.stringify(enq)?.slice(0, 150));
+  await browser.close();
+
+  ({ browser, page } = await L.start(1400, 1000));
+  console.log('Employer quote request');
+  await L.signIn(page, 'employer@mtalchemy.demo', 'AlchemyEmployer!26');
+  await L.open(page, '/quote-request', 5000);
+  await L.fill(page, 'Your name', 'Nur Aina');
+  await L.fill(page, 'Organisation', 'ABC Sdn Bhd');
+  await L.fill(page, 'Phone number', '0312345678');
+  await L.fill(page, 'Requirements', 'Two-day EQ leadership programme for 30 managers, Q1 2027.');
+  await L.click(page, 'Submit quotation request', 'button', { wait: 3000 });
+  const q = (await L.fsList('quotes')).find(x => x.ownerEmail === 'employer@mtalchemy.demo');
+  L.check(q && q.status === 'New', 'quote stored with owner', JSON.stringify(q)?.slice(0, 150));
+  await browser.close();
+
+  ({ browser, page } = await L.start(1400, 1000));
+  console.log('Admin handles enquiry + quote');
+  await L.signIn(page, 'admin@mtalchemy.demo', 'AlchemyAdmin!26');
+  await L.open(page, '/admin/enquiries', 5000);
+  await L.expectText(page, 'Daniel Tan', 'admin sees enquiry');
+  await L.open(page, '/admin/quotes', 5000);
+  await L.expectText(page, 'ABC Sdn Bhd', 'admin sees quote');
+  console.log((await L.text(page)).split('\n').filter(l => /button|textbox|dialog/.test(l)).slice(12, 30).join('\n'));
+  await L.shot(page, 'admin_quotes');
+  await browser.close();
+  console.log('FAILURES', L.failures());
+})();

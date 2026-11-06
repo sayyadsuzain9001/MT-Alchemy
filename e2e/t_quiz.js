@@ -1,0 +1,26 @@
+const L = require('./lib');
+const dump = async (page, n = 30) => console.log((await L.text(page)).split('\n').filter(l => /button|heading|textbox|text:/.test(l)).slice(0, n).join('\n').slice(0, 2500));
+(async () => {
+  const { browser, page } = await L.start(1280, 900);
+  await L.signIn(page, 'learner@mtalchemy.demo', 'AlchemyLearner!26');
+  await L.click(page, 'Continue Course', 'button', { wait: 3000 });
+  await L.click(page, 'Take Quiz', 'button', { wait: 3000 });
+  const b = (n) => L.click(page, n, 'button', { exact: true, wait: 600 });
+  await b('Next'); await L.expectText(page, 'Choose an answer to continue', 'quiz blocks empty answer');
+  await b('Self-awareness'); await b('Next');
+  await b('True'); await b('Next');
+  await b('Self-regulation'); await b('Empathy'); await b('Social skills'); await b('Next');
+  await dump(page, 12);
+  const tb = page.getByRole('textbox').first(); await tb.click(); await tb.fill('Empathy'); await b('Next');
+  await b('Pause, breathe and ask for specific examples'); await b('Submit');
+  await page.waitForTimeout(2500);
+  await L.shot(page, 'quiz_result');
+  await dump(page, 15);
+  const attempts = await L.fsList('quizAttempts');
+  const mine = attempts.filter(a => a.learner === 'learner@mtalchemy.demo');
+  L.check(mine.length >= 1 && mine[0].passed === true && mine[0].answers.length === 5, 'quiz attempt saved (passed, 5 answers)', JSON.stringify(mine[0]).slice(0, 300));
+  const prog = (await L.fsList('progress')).find(p => p.id === 'learner@mtalchemy.demo');
+  L.check(prog.completed.includes('ei-fundamentals'), 'course marked completed in Firestore');
+  await browser.close();
+  console.log('FAILURES', L.failures());
+})();

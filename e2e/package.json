@@ -1,0 +1,6 @@
+{
+  "name": "mtalchemy-e2e",
+  "private": true,
+  "description": "Browser end-to-end checks against the Firebase emulators. Build with --dart-define=ENABLE_SEMANTICS=true, serve build/web on :8085 (or set BASE), start emulators and seed first.",
+  "dependencies": { "playwright-core": "1.56.1" }
+}

@@ -1,0 +1,77 @@
+const L = require('./lib');
+const dump = async (page, n = 30, re = /button|textbox|heading|checkbox|dialog/) => console.log((await L.text(page)).split('\n').filter(l => re.test(l)).slice(0, n).join('\n').slice(0, 3000));
+(async () => {
+  const { browser, page } = await L.start(1280, 900);
+  const email = `journey.a.${Date.now()}@example.com`;
+  console.log('Journey A: register individual', email);
+  await L.open(page, '/individual', 4000);
+  await L.expectText(page, 'Grow the skills that make you thrive', 'individual homepage');
+  await L.open(page, '/register');
+  await L.fill(page, 'Full name', 'Nadia Hassan');
+  await L.fill(page, 'Email', email);
+  await L.fill(page, 'Phone', '+60 12 777 8899');
+  await L.click(page, 'Select a date', 'button', { wait: 1200 });
+  await L.click(page, 'OK', 'button', { exact: true, wait: 800 });
+  await L.click(page, 'Mindfulness', 'checkbox', { exact: true, wait: 300 });
+  await L.fill(page, 'Password', 'Journey2026!');
+  await L.fill(page, 'Confirm password', 'Journey2026!');
+  await L.click(page, 'I agree', 'checkbox', { wait: 300 });
+  await L.click(page, 'Create learner account', 'button', { wait: 5000 });
+  await L.expectText(page, 'Welcome, Nadia Hassan', 'registered and on dashboard');
+  const u = (await L.fsList('users')).find(x => x.email === email);
+  L.check(u && u.dateOfBirth, 'DOB stored on profile', JSON.stringify(u)?.slice(0, 200));
+
+  console.log('Browse → course → pay → enrol');
+  await L.open(page, '/hub', 4000);
+  await L.fill(page, 'Search courses', 'Fundamentals');
+  await page.waitForTimeout(800);
+  await L.click(page, 'View Course', 'button', { wait: 2500 });
+  await L.click(page, 'Enrol now', 'button', { wait: 3000 });
+  await L.expectText(page, 'Course fee', 'enrol page shows fee');
+  await L.click(page, 'and enrol', 'button', { wait: 1500 });
+  await L.fill(page, 'Name on card', 'Nadia Hassan');
+  await L.fill(page, 'Card number', '4000 0000 0000 0002');
+  await L.fill(page, 'Expiry', '12/30');
+  await L.fill(page, 'CVC', '123');
+  await L.shot(page, 'pay_dialog');
+  await L.click(page, 'Pay RM', 'button', { wait: 3000 });
+  await L.expectText(page, 'declined', 'declined card shows failure');
+  await L.click(page, 'and enrol', 'button', { wait: 1500 });
+  await L.fill(page, 'Name on card', 'Nadia Hassan');
+  await L.fill(page, 'Card number', '4242 4242 4242 4242');
+  await L.fill(page, 'Expiry', '12/30');
+  await L.fill(page, 'CVC', '123');
+  await L.click(page, 'Pay RM', 'button', { wait: 5000 });
+  await L.expectText(page, 'You are enrolled', 'paid and enrolled');
+  const orders = (await L.fsList('orders')).filter(o => o.customerEmail === email);
+  L.check(orders.some(o => o.paymentStatus === 'Paid') && orders.some(o => o.paymentStatus === 'Failed'), 'paid and failed course orders recorded', JSON.stringify(orders.map(o => o.paymentStatus)));
+
+  console.log('Lessons → quiz → certificate');
+  await L.click(page, 'Start Course', 'button', { wait: 3000 });
+  for (let k = 0; k < 20; k++) {
+    await page.getByRole('button', { name: 'Mark Complete', exact: true }).click(); await page.waitForTimeout(250);
+    const next = page.getByRole('button', { name: 'Next', exact: true });
+    if (await next.count()) { await next.click(); await page.waitForTimeout(250); }
+  }
+  await page.waitForTimeout(1500);
+  const prog = (await L.fsList('progress')).find(p => p.id === email);
+  L.check(prog && prog.done['ei-fundamentals'].length === 20, 'all lessons complete', JSON.stringify(prog?.done).slice(0, 120));
+  await L.click(page, 'Take Quiz', 'button', { wait: 2500 });
+  const b = (n) => L.click(page, n, 'button', { exact: true, wait: 500 });
+  await b('Self-awareness'); await b('Next'); await b('True'); await b('Next');
+  await b('Self-regulation'); await b('Empathy'); await b('Social skills'); await b('Next');
+  await L.fill(page, 'Your answer', 'Empathy'); await b('Next');
+  await b('Pause, breathe and ask for specific examples'); await b('Submit');
+  await page.waitForTimeout(2000);
+  await L.click(page, 'View Certificate', 'button', { wait: 3000 });
+  await L.expectText(page, 'Congratulations', 'certificate page');
+  await L.shot(page, 'certificate');
+  await page.waitForTimeout(1500);
+  const certs = (await L.fsList('certificates')).filter(c => c.learnerEmail === email);
+  L.check(certs.length === 1, 'certificate recorded for verification', certs[0]?.certificateId);
+  await L.open(page, '/verify?id=' + encodeURIComponent(certs[0]?.certificateId || 'X'), 5000);
+  await L.expectText(page, 'Valid certificate', 'QR verify link shows valid certificate');
+  await L.shot(page, 'verify');
+  await browser.close();
+  console.log('FAILURES', L.failures());
+})();
