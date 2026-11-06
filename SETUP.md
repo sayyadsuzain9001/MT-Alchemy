@@ -156,13 +156,13 @@ powershell -ExecutionPolicy Bypass -File tool\dev.ps1
 
 ## 6. Deploy with GitHub Actions (GitHub Pages)
 
-The workflow is [`.github/workflows/ci-deploy.yml`](.github/workflows/ci-deploy.yml). On every push to `main` it analyzes the code, runs the tests, builds the web app and publishes it to GitHub Pages.
+The workflow is [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml). On every push to `main` it analyzes the code, runs the tests, builds the web app and publishes it to GitHub Pages.
 
 ### 6.1 Change these names for your own deployment
 
 | What | Where | Change to |
 | --- | --- | --- |
-| Site path (base href) | Set automatically from the repository name in `ci-deploy.yml` (`/${{ github.event.repository.name }}/`) | Nothing to change, unless you use a custom domain: then replace it with `/` |
+| Site path (base href) | Set automatically from the repository name in `deploy.yml` (`/${{ github.event.repository.name }}/`) | Nothing to change, unless you use a custom domain: then replace it with `/` |
 | Badge and links | `README.md` (`sayyadsuzain9001/MT-Alchemy`) | `<your-github-username>/<your-repo-name>` |
 | Public site address | `README.md`, this file | `https://<your-github-username>.github.io/<your-repo-name>/` |
 | Firebase project | GitHub secret `FIREBASE_PROJECT_ID`, `.firebaserc` if you add one | Your Firebase project ID |

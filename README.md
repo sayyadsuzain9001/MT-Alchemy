@@ -11,7 +11,7 @@
 ![Firebase](https://img.shields.io/badge/Firebase-Auth%20%7C%20Firestore-FFCA28?logo=firebase&logoColor=black)
 ![Stripe](https://img.shields.io/badge/Payments-Stripe-635BFF?logo=stripe&logoColor=white)
 ![Gemini](https://img.shields.io/badge/AI-Gemini%203.5%20Flash-8E75B2?logo=googlegemini&logoColor=white)
-[![Test and deploy](https://github.com/sayyadsuzain9001/MT-Alchemy/actions/workflows/ci-deploy.yml/badge.svg)](https://github.com/sayyadsuzain9001/MT-Alchemy/actions/workflows/ci-deploy.yml)
+[![Test and deploy](https://github.com/sayyadsuzain9001/MT-Alchemy/actions/workflows/deploy.yml/badge.svg)](https://github.com/sayyadsuzain9001/MT-Alchemy/actions/workflows/deploy.yml)
 ![Tests](https://img.shields.io/badge/tests-38%20passing-2E7D32)
 
 <img src="docs/screenshots/home.jpg" alt="MT Alchemy homepage" width="860" />
@@ -198,7 +198,7 @@ All settings are passed at build time from `config/app_env.json` (git-ignored). 
 
 ## Deploy with GitHub Actions
 
-Every push to `main` runs [`.github/workflows/ci-deploy.yml`](.github/workflows/ci-deploy.yml): it analyzes the code, runs the tests, builds the web app and publishes it to GitHub Pages at **https://sayyadsuzain9001.github.io/MT-Alchemy/**. Pull requests run only the checks.
+Every push to `main` runs [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml): it analyzes the code, runs the tests, builds the web app and publishes it to GitHub Pages at **https://sayyadsuzain9001.github.io/MT-Alchemy/**. Pull requests run only the checks.
 
 One-time setup:
 
