@@ -11,6 +11,7 @@
 ![Firebase](https://img.shields.io/badge/Firebase-Auth%20%7C%20Firestore-FFCA28?logo=firebase&logoColor=black)
 ![Stripe](https://img.shields.io/badge/Payments-Stripe-635BFF?logo=stripe&logoColor=white)
 ![Gemini](https://img.shields.io/badge/AI-Gemini%203.5%20Flash-8E75B2?logo=googlegemini&logoColor=white)
+[![Test and deploy](https://github.com/sayyadsuzain9001/MT-Alchemy/actions/workflows/ci-deploy.yml/badge.svg)](https://github.com/sayyadsuzain9001/MT-Alchemy/actions/workflows/ci-deploy.yml)
 ![Tests](https://img.shields.io/badge/tests-38%20passing-2E7D32)
 
 <img src="docs/screenshots/home.jpg" alt="MT Alchemy homepage" width="860" />
@@ -29,6 +30,7 @@
 - [User journeys](#user-journeys)
 - [Getting started](#getting-started)
 - [Configuration](#configuration)
+- [Deploy with GitHub Actions](#deploy-with-github-actions)
 - [Payments with Stripe](#payments-with-stripe)
 - [AI assistant](#ai-assistant)
 - [Data model and security](#data-model-and-security)
@@ -190,6 +192,27 @@ All settings are passed at build time from `config/app_env.json` (git-ignored). 
 | `GEMINI_API_KEY`, `GEMINI_MODEL` | AI assistant. Free key from [Google AI Studio](https://aistudio.google.com/app/apikey). |
 | `PAYMENTS_API_URL` | URL of `payments_server` (e.g. `http://localhost:4242`). Empty = built-in test gateway. |
 | `SHOW_DEMO_ACCOUNTS` | Show demo-account chips on the sign-in page. |
+
+## Deploy with GitHub Actions
+
+Every push to `main` runs [`.github/workflows/ci-deploy.yml`](.github/workflows/ci-deploy.yml): it analyzes the code, runs the tests, builds the web app and publishes it to GitHub Pages at **https://sayyadsuzain9001.github.io/MT-Alchemy/**. Pull requests run only the checks.
+
+One-time setup:
+
+1. **Settings → Pages → Build and deployment → Source:** choose **GitHub Actions**.
+2. **Settings → Secrets and variables → Actions → New repository secret**, and add:
+
+   | Secret | Value |
+   | --- | --- |
+   | `FIREBASE_API_KEY` | Firebase web app API key |
+   | `FIREBASE_PROJECT_ID` | e.g. `mtalchemy-ee353` |
+   | `FIREBASE_APP_ID` | Firebase web app ID |
+   | `FIREBASE_MESSAGING_SENDER_ID` | Firebase sender ID |
+   | `GEMINI_API_KEY` | Google AI Studio key (optional; without it the assistant uses built-in answers) |
+   | `PAYMENTS_API_URL` | URL of a hosted `payments_server` (optional; without it the built-in test gateway is used) |
+
+3. In Firebase **Authentication → Settings → Authorized domains**, add `sayyadsuzain9001.github.io`.
+4. Open **Actions → Test and deploy → Run workflow** (or push to `main`).
 
 ## Payments with Stripe
 
