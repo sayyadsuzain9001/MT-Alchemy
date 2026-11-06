@@ -18,6 +18,8 @@
 
 </div>
 
+> **Cloning this project?** Read **[SETUP.md](SETUP.md)** first: it explains every API key (Firebase, Gemini, Stripe), which domains to authorize, and which names to change before deploying under your own account.
+
 ---
 
 ## Table of contents
@@ -37,6 +39,7 @@
 - [Testing](#testing)
 - [Project structure](#project-structure)
 - [Documentation](#documentation)
+- [Setup guide (API keys and deployment)](SETUP.md)
 - [Credits](#credits)
 
 ## About

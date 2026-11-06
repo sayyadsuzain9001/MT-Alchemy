@@ -1,5 +1,12 @@
 name: Test and deploy
 
+# Before using this in your own copy, see SETUP.md section 6:
+#  - add the repository secrets (FIREBASE_*, optional GEMINI_API_KEY and PAYMENTS_API_URL)
+#  - set Settings > Pages > Source to "GitHub Actions"
+#  - add <your-username>.github.io to Firebase Authentication > Authorized domains
+# The site path comes from the repository name automatically; if you use a
+# custom domain, change --base-href below to "/".
+
 # On every push to main: analyze, run the tests, build the web app and
 # publish it to GitHub Pages. Pull requests only run the checks.
 on:
